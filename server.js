@@ -14,7 +14,7 @@ const bcrypt = require("bcrypt");
 // for .env
 const dotenv = require("dotenv");
 dotenv.config();
-const port = process.env.port;
+const port = process.env.port || 3002;
 
 // for getting images from client-side
 const fileUpload = require("express-fileupload");
@@ -160,8 +160,6 @@ app.post("/destinations", async (req, res) => {
     picture: req.files && req.files.picture ? req.files.picture.name : "",
   });
 
-  console.log(destination);
-
   destination.save(function (err) {
     if (err) {
       res.status(422).json(err);
@@ -192,7 +190,6 @@ app.put("/destinations/:id", async (req, res) => {
 
   try {
     const savedDestination = await destination.save();
-    console.log(savedDestination);
     res.status(201).json(savedDestination);
   } catch (err) {
     res.status(422).json(err);
@@ -223,23 +220,18 @@ app.get("/destinations/:id", async (req, res) => {
 
 // GET request for all destination objects
 app.get("/destinations", async (req, res) => {
-  console.log("get all destinations on server");
-  console.log(Destination);
   Destination.find({}, function (err, destinations) {
-    console.log("trying to get all destinations");
     if (err) {
       console.log(err);
       res.status(422).json({
         errors: err,
       });
     } else {
-      console.log(destinations);
       destinations.forEach((destination) => {
         if (destination.picture !== "") {
           destination.picture = getImagePath(destination.picture);
         }
       });
-      console.log(destinations);
       res.status(200).json(destinations);
     }
   });
@@ -273,7 +265,8 @@ app.delete(
 // construct link to image before sending it to client
 function getImagePath(img_name) {
   if (img_name.length > 0) {
-    return `http://localhost:${port}/uploads/${img_name}`;
+    //return `http://localhost:${port}/uploads/${img_name}`;
+    return `https://travel-destinations-backend.onrender.com/uploads/${img_name}`;
   } else {
     return "";
   }
