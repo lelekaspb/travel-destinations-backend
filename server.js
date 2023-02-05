@@ -30,7 +30,7 @@ app.use(fileUpload({ createParentPath: true }));
 
 // Function to serve all static files inside public directory.
 app.use(express.static("public"));
-app.use("/public", express.static("public"));
+app.use("/uploads", express.static("uploads"));
 
 /*----------- CONNECT TO MONGODB ATLAS CLUSTER ------------------
 ---------------------------------------------------------------*/
@@ -266,8 +266,7 @@ app.delete(
 function getImagePath(img_name) {
   if (img_name.length > 0) {
     //return `http://localhost:${port}/uploads/${img_name}`;
-    // return `https://travel-destinations-backend.onrender.com/uploads/${img_name}`;
-    return `https://travel-destinations-backend.onrender.com/${__dirname}/public/${img_name}`;
+    return `https://travel-destinations-backend.onrender.com/uploads/${img_name}`;
   } else {
     return "";
   }
@@ -276,7 +275,7 @@ function getImagePath(img_name) {
 // move image file that came from client to uploads folder in server
 async function moveImageToUploads(files) {
   if (files) {
-    const filepath = `${__dirname}/public/${files.picture.name}`;
+    const filepath = `${__dirname}/uploads/${files.picture.name}`;
     console.log(filepath);
     await files.picture.mv(filepath, (err) => {
       if (err) {
