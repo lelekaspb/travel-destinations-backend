@@ -185,8 +185,9 @@ app.put("/destinations/:id", async (req, res) => {
   destination.country = req.body.country;
   destination.location = req.body.location;
   destination.description = req.body.description;
-  destination.picture =
-    req.files && req.files.picture ? req.files.picture.name : "";
+  if (req.files && req.files.picture) {
+    destination.picture = req.files.picture.name;
+  }
 
   try {
     const savedDestination = await destination.save();
