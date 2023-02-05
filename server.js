@@ -268,7 +268,7 @@ function getImagePath(img_name) {
   if (img_name.length > 0) {
     //return `http://localhost:${port}/uploads/${img_name}`;
     // return `https://travel-destinations-backend.onrender.com/uploads/${img_name}`;
-    return `https://travel-destinations-backend.onrender.com/${__dirname}/uploads/${files.picture.name}`;
+    return `https://travel-destinations-backend.onrender.com/${__dirname}/uploads/${img_name}`;
   } else {
     return "";
   }
