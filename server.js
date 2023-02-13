@@ -17,7 +17,15 @@ dotenv.config();
 const port = process.env.port || 3002;
 
 // for getting images from client-side
-const fileUpload = require("express-fileupload");
+//const fileUpload = require("express-fileupload");
+//
+const uploadRouter = require("./routes/upload.routes");
+const { uploadImage } = require("./controller/upload.controller");
+const { upload } = require("./service/upload.service");
+const { ErrorHandler } = require("./utils/errorHandler");
+const { bufferToDataURI } = require("./utils/file");
+const { uploadToCloudinary } = require("./service/upload.service");
+const cloudinary = require("cloudinary").v2;
 
 // mongoose schemas
 const Destination = require("./schemas/traveldestination");
@@ -26,7 +34,10 @@ const User = require("./schemas/userschema.js");
 // auto-refresh server on file changes: https://www.npmjs.com/package/@types/nodemon
 app.use(express.json());
 app.use(cors());
-app.use(fileUpload({ createParentPath: true }));
+//
+// app.use(fileUpload({ createParentPath: true }));
+//
+app.use("/upload", uploadRouter);
 
 // Function to serve all static files inside public directory.
 app.use(express.static("public"));
@@ -62,6 +73,7 @@ const strategy = new JwtStrategy(jwtOptions, async function (
 ) {
   const user = await User.findOne({ _id: jwt_payload._id });
   if (user) {
+    console.log(user);
     next(null, user);
   } else {
     next(null, false);
@@ -102,31 +114,26 @@ app.post("/auth/signup", (req, res) => {
 
 // sign in
 app.post("/auth/signin", (req, res) => {
-  console.log("sign in");
+  // console.log("sign in");
   const email = req.body.email;
   const password = req.body.password;
-  console.log(email, password);
+  // console.log(email, password);
   const query = { email: email };
   // find user by email
   User.findOne(query, async function (err, user) {
     if (err) {
-      console.log("error");
-      console.error(err);
       res.status(422).json({
         success: false,
         message: `Could not find user with email ${email}`,
       });
     } else {
-      console.log("email match - user found");
-      console.log(user); // add check if user is null
       // check if the password is correct
       const isValid = await bcrypt.compare(password, user.password);
-      console.log("password is valid: ");
-      console.log(isValid);
+
       if (isValid) {
-        console.log("user");
-        console.log(user);
-        const token = jwt.sign({ _id: user._id }, process.env.jwt_secret);
+        const token = jwt.sign({ _id: user._id }, process.env.jwt_secret, {
+          expiresIn: 60 * 60 * 3,
+        });
         res.status(200).json({
           success: true,
           token: token,
@@ -144,20 +151,24 @@ app.post("/auth/signin", (req, res) => {
 /*------------------------ CRUD ROUTES -------------------------
 ---------------------------------------------------------------*/
 
-// POST request
-app.post("/destinations", async (req, res) => {
-  moveImageToUploads(req.files);
-  console.log(req.body.date_from[1]);
-  console.log(req.body.date_to[1]);
+// POST request - new destination
+app.post("/destinations", upload.single("picture"), async (req, res) => {
+  let imageDetails = null;
+  if (req.file) {
+    const fileFormat = req.file.mimetype.split("/")[1];
+    const { base64 } = bufferToDataURI(fileFormat, req.file.buffer);
+    imageDetails = await uploadToCloudinary(base64, fileFormat);
+  }
 
   const destination = new Destination({
     title: req.body.title,
-    date_from: new Date(req.body.date_from[1]),
-    date_to: new Date(req.body.date_to[1]),
+    date_from: new Date(req.body.date_from),
+    date_to: new Date(req.body.date_to),
     country: req.body.country,
     location: req.body.location,
     description: req.body.description,
-    picture: req.files && req.files.picture ? req.files.picture.name : "",
+    picture: imageDetails ? imageDetails.secure_url : null,
+    picture_public_id: imageDetails ? imageDetails.public_id : null,
   });
 
   destination.save(function (err) {
@@ -170,23 +181,33 @@ app.post("/destinations", async (req, res) => {
 });
 
 // PUT request
-app.put("/destinations/:id", async (req, res) => {
+app.put("/destinations/:id", upload.single("picture"), async (req, res) => {
   const id = req.params.id;
   const ObjectID = require("mongodb").ObjectId;
 
   const destination = await Destination.findOne({ _id: ObjectID(id) });
-  if (destination) {
-    moveImageToUploads(req.files);
-  }
 
   destination.title = req.body.title;
-  destination.date_from = new Date(req.body.date_from[1]);
-  destination.date_to = new Date(req.body.date_to[1]);
+  destination.date_from = new Date(req.body.date_from);
+  destination.date_to = new Date(req.body.date_to);
   destination.country = req.body.country;
   destination.location = req.body.location;
   destination.description = req.body.description;
-  if (req.files && req.files.picture) {
-    destination.picture = req.files.picture.name;
+
+  let imageDetails = null;
+  if (req.file) {
+    // delete old pic
+    const { uploader } = cloudinary;
+    const res = await uploader.destroy(destination.picture_public_id);
+
+    // upload new pic
+    const fileFormat = req.file.mimetype.split("/")[1];
+    const { base64 } = bufferToDataURI(fileFormat, req.file.buffer);
+    imageDetails = await uploadToCloudinary(base64, fileFormat);
+
+    // update picture url and public_id in db
+    destination.picture = imageDetails.secure_url;
+    destination.picture_public_id = imageDetails.public_id;
   }
 
   try {
@@ -195,9 +216,6 @@ app.put("/destinations/:id", async (req, res) => {
   } catch (err) {
     res.status(422).json(err);
   }
-
-  // apparently, mongoose validation on updateOne does not work
-  // could do destination.validate() instead
 });
 
 // GET request for one destination document
@@ -228,11 +246,11 @@ app.get("/destinations", async (req, res) => {
         errors: err,
       });
     } else {
-      destinations.forEach((destination) => {
-        if (destination.picture !== "") {
-          destination.picture = getImagePath(destination.picture);
-        }
-      });
+      // destinations.forEach((destination) => {
+      //   if (destination.picture !== "") {
+      //     destination.picture = getImagePath(destination.picture);
+      //   }
+      // });
       res.status(200).json(destinations);
     }
   });
@@ -248,6 +266,11 @@ app.delete(
     var o_id = new ObjectID(id);
     const query = { _id: o_id };
 
+    // delete image from cloudinary
+    const destination = await Destination.findOne(query);
+    const { uploader } = cloudinary;
+    await uploader.destroy(destination.picture_public_id);
+
     Destination.deleteOne(query, function (err) {
       if (err) {
         res.status(422).json(err);
@@ -260,35 +283,6 @@ app.delete(
     });
   }
 );
-
-/*-------------------- UTILITY FUNCTIONS -----------------------
----------------------------------------------------------------*/
-// construct link to image before sending it to client
-function getImagePath(img_name) {
-  if (img_name.length > 0) {
-    //return `http://localhost:${port}/uploads/${img_name}`;
-    // return `https://travel-destinations-backend.onrender.com/uploads/${img_name}`;
-    return `https://travel-destinations-backend.onrender.com/${__dirname}/uploads/${files.picture.name}`;
-  } else {
-    return "";
-  }
-}
-
-// move image file that came from client to uploads folder in server
-async function moveImageToUploads(files) {
-  if (files) {
-    const filepath = `${__dirname}/uploads/${files.picture.name}`;
-    console.log(filepath);
-    await files.picture.mv(filepath, (err) => {
-      if (err) {
-        console.log("could not upload file");
-        return "";
-      } else {
-        console.log("file has been moved");
-      }
-    });
-  }
-}
 
 /*-------------------- APP LISTENS ON PORT ---------------------
 ---------------------------------------------------------------*/

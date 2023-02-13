@@ -12,6 +12,7 @@ const DestinationSchema = new Schema({
     maxLength: 300,
   },
   picture: { type: String },
+  picture_public_id: { type: String },
 });
 
 module.exports = mongoose.model("Destination", DestinationSchema);
