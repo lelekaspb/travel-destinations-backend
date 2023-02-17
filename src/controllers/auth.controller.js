@@ -1,12 +1,12 @@
-const { signUserUp, signUserIn } = require("../services/auth.service");
+const authService = require("../services/auth.service");
 
-const signUp = (req, res) => {
-  const result = signUserUp(req.body);
+const signUp = async (req, res) => {
+  const result = await authService.signUp(req.body);
   res.status(result.status).json(result.response);
 };
 
 const signIn = async (req, res) => {
-  const result = await signUserIn(req.body);
+  const result = await authService.signIn(req.body);
   res.status(result.status).json(result.response);
 };
 

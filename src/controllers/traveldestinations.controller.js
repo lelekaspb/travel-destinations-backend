@@ -1,12 +1,15 @@
 const traveldestinationService = require("../services/traveldestinations.service");
 
 const createDestination = async (req, res) => {
-  const result = traveldestinationService.createDestination(req.file, req.body);
+  const result = await traveldestinationService.createDestination(
+    req.file,
+    req.body
+  );
   res.status(result.status).json(result.response);
 };
 
 const updateDestination = async (req, res) => {
-  const result = traveldestinationService.updateDestination(
+  const result = await traveldestinationService.updateDestination(
     req.params.id,
     req.file,
     req.body
@@ -15,17 +18,21 @@ const updateDestination = async (req, res) => {
 };
 
 const getDestinationById = async (req, res) => {
-  const result = traveldestinationService.getDestinationById(req.params.id);
+  const result = await traveldestinationService.getDestinationById(
+    req.params.id
+  );
   res.status(result.status).json(result.response);
 };
 
 const getAllDestinations = async (req, res) => {
-  const result = traveldestinationService.getAllDestinations();
+  const result = await traveldestinationService.getAllDestinations();
   res.status(result.status).json(result.response);
 };
 
 const deleteDestination = async (req, res) => {
-  const result = traveldestinationService.deleteDestination(req.params.id);
+  const result = await traveldestinationService.deleteDestination(
+    req.params.id
+  );
   res.status(result.status).json(result.response);
 };
 

@@ -2,43 +2,33 @@ const User = require("../schemas/userschema");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const signUserUp = async (data) => {
+const signUp = async (data) => {
   const user = new User({
     email: data.email,
     password: data.password,
   });
 
-  user.save(function (err) {
-    if (err) {
-      return {
-        status: 422,
-        response: {
-          success: false,
-          message: err,
-        },
-      };
-      //   res.status(422).json({
-      //     success: false,
-      //     message: err,
-      //   });
-    } else {
-      //   res.status(201).json({
-      //     success: true,
-      //     user: user,
-      //   });
-      return {
-        status: 201,
-        response: {
-          success: true,
-          user: user,
-        },
-      };
-    }
-  });
+  try {
+    await user.save();
+    return {
+      status: 201,
+      response: {
+        success: true,
+        user: user,
+      },
+    };
+  } catch (err) {
+    return {
+      status: 422,
+      response: {
+        success: false,
+        message: err,
+      },
+    };
+  }
 };
 
-const signUserIn = async (data) => {
-  console.log("sign in");
+const signIn = async (data) => {
   const email = data.email;
   const password = data.password;
   const query = { email: email };
@@ -52,10 +42,7 @@ const signUserIn = async (data) => {
       const token = jwt.sign({ _id: user._id }, process.env.jwt_secret, {
         expiresIn: 60 * 60 * 3,
       });
-      // res.status(200).json({
-      //   success: true,
-      //   token: token,
-      // });
+
       return {
         status: 200,
         response: {
@@ -85,6 +72,6 @@ const signUserIn = async (data) => {
 };
 
 module.exports = {
-  signUserUp,
-  signUserIn,
+  signUp,
+  signIn,
 };

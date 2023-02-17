@@ -49,7 +49,6 @@ const deleteFile = async (fileId) => {
 
 module.exports = {
   upload,
-  // uploadToCloudinary,
   uploadFile,
   deleteFile,
 };

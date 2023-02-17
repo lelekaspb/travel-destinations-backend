@@ -12,7 +12,6 @@ const UserSchema = new Schema({
 // - with the use og mongoose hooks
 UserSchema.pre("save", async function (next) {
   const hash = await bcrypt.hash(this.password, 10);
-  console.log(hash);
   this.password = hash;
   next();
 });
