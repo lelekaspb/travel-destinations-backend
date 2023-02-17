@@ -1,6 +1,7 @@
 const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
 const { ErrorHandler } = require("../utils/errorHandler");
+const { bufferToDataURI } = require("../utils/file");
 
 cloudinary.config({
   cloud_name: process.env.cloudinaryCloudName,
@@ -32,7 +33,23 @@ const uploadToCloudinary = async (fileString, format) => {
   }
 };
 
+const uploadFile = async (file) => {
+  if (file) {
+    const fileFormat = file.mimetype.split("/")[1];
+    const { base64 } = bufferToDataURI(fileFormat, file.buffer);
+    return await uploadToCloudinary(base64, fileFormat);
+  }
+  return null;
+};
+
+const deleteFile = async (fileId) => {
+  const { uploader } = cloudinary;
+  await uploader.destroy(fileId);
+};
+
 module.exports = {
   upload,
-  uploadToCloudinary,
+  // uploadToCloudinary,
+  uploadFile,
+  deleteFile,
 };

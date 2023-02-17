@@ -8,7 +8,7 @@ const {
 } = require("../controllers/traveldestinations.controller");
 require("../configs/passport-config");
 const passport = require("passport");
-const { upload } = require("../services/upload.service");
+const { upload } = require("../services/file.service");
 
 const router = Router();
 

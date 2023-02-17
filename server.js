@@ -11,7 +11,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 const port = process.env.port || 3002;
 
-// routers
+// for routes
 const authRouter = require("./src/routes/auth.routes");
 const destinationRouter = require("./src/routes/traveldestinations.routes");
 
@@ -19,12 +19,8 @@ const destinationRouter = require("./src/routes/traveldestinations.routes");
 app.use(express.json());
 app.use(cors());
 
-app.use("/auth", authRouter);
-app.use("/destinations", destinationRouter);
-
 /*----------- CONNECT TO MONGODB ATLAS CLUSTER ------------------
 ---------------------------------------------------------------*/
-
 const connectionStringAtlas = process.env.mongooseAtlasConnectionString;
 
 try {
@@ -42,6 +38,11 @@ try {
 ---------------------------------------------------------------*/
 require("./src/configs/passport-config");
 app.use(passport.initialize());
+
+/*-------------------------- ROUTES ----------------------------
+---------------------------------------------------------------*/
+app.use("/auth", authRouter);
+app.use("/destinations", destinationRouter);
 
 /*-------------------- APP LISTENS ON PORT ---------------------
 ---------------------------------------------------------------*/
