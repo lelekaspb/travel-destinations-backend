@@ -1,4 +1,4 @@
-const Destination = require("../schemas/traveldestination");
+const Destination = require("../schemas/traveldestination.schema");
 const { uploadFile, deleteFile } = require("../services/file.service");
 
 const createDestination = async (file, data) => {
@@ -24,7 +24,7 @@ const createDestination = async (file, data) => {
   } catch (err) {
     return {
       status: 422,
-      response: err,
+      response: { ...err },
     };
   }
 };
@@ -41,7 +41,9 @@ const updateDestination = async (id, file, data) => {
   destination.description = data.description;
 
   if (file) {
-    deleteFile(destination.picture_public_id);
+    if (destination.picture && destination.picture_public_id) {
+      deleteFile(destination.picture_public_id);
+    }
     const imageDetails = await uploadFile(file);
     destination.picture = imageDetails ? imageDetails.secure_url : null;
     destination.picture_public_id = imageDetails
@@ -58,7 +60,7 @@ const updateDestination = async (id, file, data) => {
   } catch (err) {
     return {
       status: 422,
-      response: err,
+      response: { ...err },
     };
   }
 };
@@ -77,7 +79,7 @@ const getDestinationById = async (id) => {
   } catch (err) {
     return {
       status: 422,
-      response: err,
+      response: { ...err },
     };
   }
 };
@@ -90,7 +92,7 @@ const getAllDestinations = async () => {
       response: destinations,
     };
   } catch (err) {
-    return { status: 422, response: err };
+    return { status: 422, response: { ...err } };
   }
 };
 
@@ -114,7 +116,7 @@ const deleteDestination = async (id) => {
   } catch (err) {
     return {
       status: 422,
-      response: err,
+      response: { ...err },
     };
   }
 };

@@ -15,4 +15,5 @@ UserSchema.pre("save", async function (next) {
   this.password = hash;
   next();
 });
+
 module.exports = mongoose.model("User", UserSchema);

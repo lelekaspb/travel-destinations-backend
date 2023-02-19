@@ -6,7 +6,7 @@ const {
   getAllDestinations,
   deleteDestination,
 } = require("../controllers/traveldestinations.controller");
-require("../configs/passport-config");
+require("../configs/passport.config");
 const passport = require("passport");
 const { upload } = require("../services/file.service");
 

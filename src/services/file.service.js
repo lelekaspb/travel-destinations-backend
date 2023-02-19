@@ -1,7 +1,6 @@
 const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
-const { ErrorHandler } = require("../utils/errorHandler");
-const { bufferToDataURI } = require("../utils/file");
+const { bufferToDataURI } = require("../utils/file.util");
 
 cloudinary.config({
   cloud_name: process.env.cloudinaryCloudName,
@@ -29,7 +28,7 @@ const uploadToCloudinary = async (fileString, format) => {
 
     return res;
   } catch (error) {
-    throw new ErrorHandler(500, error);
+    throw new Error(500, error);
   }
 };
 

@@ -2,16 +2,10 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const mongoose = require("mongoose");
-
-// for authentification
 const passport = require("passport");
-
-// for .env
 const dotenv = require("dotenv");
 dotenv.config();
 const port = process.env.port || 3002;
-
-// for routes
 const authRouter = require("./src/routes/auth.routes");
 const destinationRouter = require("./src/routes/traveldestinations.routes");
 
@@ -36,7 +30,7 @@ try {
 
 /*---------------------- PASSPORT STRATEGY ---------------------
 ---------------------------------------------------------------*/
-require("./src/configs/passport-config");
+require("./src/configs/passport.config");
 app.use(passport.initialize());
 
 /*-------------------------- ROUTES ----------------------------
