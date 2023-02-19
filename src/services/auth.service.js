@@ -58,6 +58,7 @@ const signIn = async (data) => {
       response: {
         success: false,
         message: "The password is not correct",
+        field: "password",
       },
     };
   } catch (err) {
@@ -66,6 +67,7 @@ const signIn = async (data) => {
       response: {
         success: false,
         message: `Could not find user with email ${email}`,
+        field: "email",
       },
     };
   }
