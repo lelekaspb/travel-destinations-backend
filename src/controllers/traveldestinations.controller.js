@@ -25,6 +25,7 @@ const getDestinationById = async (req, res) => {
 };
 
 const getAllDestinations = async (req, res) => {
+  console.log("get all destinations in traveldestinations controller");
   const result = await traveldestinationService.getAllDestinations();
   res.status(result.status).json(result.response);
 };
