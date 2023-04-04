@@ -25,6 +25,8 @@ const uploadToCloudinary = async (fileString, format) => {
         unique_filename: true,
       }
     );
+    console.log("result of uploading to cloudinary");
+    console.log(res);
 
     return res;
   } catch (error) {
