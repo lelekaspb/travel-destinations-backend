@@ -102,7 +102,9 @@ const deleteDestination = async (id) => {
   const query = { _id: o_id };
 
   const destination = await Destination.findOne(query);
-  await deleteFile(destination.picture_public_id);
+  if (destination.picture && destination.picture_public_id) {
+    await deleteFile(destination.picture_public_id);
+  }
 
   try {
     await Destination.deleteOne(query);
