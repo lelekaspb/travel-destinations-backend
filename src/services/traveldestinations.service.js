@@ -39,16 +39,24 @@ const updateDestination = async (id, file, data) => {
   destination.country = data.country;
   destination.location = data.location;
   destination.description = data.description;
+  console.log("not yet updated destination");
+  console.log(destination);
 
   if (file) {
     if (destination.picture && destination.picture_public_id) {
       deleteFile(destination.picture_public_id);
     }
-    const imageDetails = await uploadFile(file);
-    destination.picture = imageDetails ? imageDetails.secure_url : null;
-    destination.picture_public_id = imageDetails
-      ? imageDetails.public_id
-      : null;
+    try {
+      const imageDetails = await uploadFile(file);
+      console.log("image details after uploading to cloudinary");
+      console.log(imageDetails);
+      destination.picture = imageDetails ? imageDetails.secure_url : null;
+      destination.picture_public_id = imageDetails
+        ? imageDetails.public_id
+        : null;
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   try {

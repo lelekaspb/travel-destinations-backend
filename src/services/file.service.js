@@ -33,17 +33,28 @@ const uploadToCloudinary = async (fileString, format) => {
 };
 
 const uploadFile = async (file) => {
+  console.log("file");
+  console.log(file);
   if (file) {
     const fileFormat = file.mimetype.split("/")[1];
     const { base64 } = bufferToDataURI(fileFormat, file.buffer);
-    return await uploadToCloudinary(base64, fileFormat);
+
+    try {
+      return await uploadToCloudinary(base64, fileFormat);
+    } catch (err) {
+      console.error(err);
+    }
   }
   return null;
 };
 
 const deleteFile = async (fileId) => {
   const { uploader } = cloudinary;
-  await uploader.destroy(fileId);
+  try {
+    await uploader.destroy(fileId);
+  } catch (err) {
+    console.error(err);
+  }
 };
 
 module.exports = {

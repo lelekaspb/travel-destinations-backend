@@ -9,6 +9,7 @@ const createDestination = async (req, res) => {
 };
 
 const updateDestination = async (req, res) => {
+  console.log("update destination controller");
   const result = await traveldestinationService.updateDestination(
     req.params.id,
     req.file,
